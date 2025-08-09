@@ -22,8 +22,9 @@ export function NavBar() {
               variant={active === key ? "primaryTab" : "ghostTab"}
               onClick={() => setActive(key)}
               aria-current={active === key ? "page" : undefined}
+              className={active === key ? "nav-active" : undefined}
             >
-              <Icon size={16} />
+              <Icon size={16} className="nav-icon" />
               {label}
             </Button>
           ))}

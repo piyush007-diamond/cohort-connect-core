@@ -20,6 +20,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         primaryTab: "bg-primary text-primary-foreground",
         ghostTab: "text-muted-foreground hover:text-foreground hover:bg-accent/70",
+        connect: "btn-connect",
+        message: "btn-message",
       },
       size: {
         default: "h-10 px-4 py-2",
