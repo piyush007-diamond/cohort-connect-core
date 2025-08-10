@@ -15,46 +15,44 @@ export interface Post {
 export function PostCard({ post }: { post: Post }) {
   return (
     <article className="mb-4">
-      <Card className="post-card rounded-2xl">
+      <Card className="rounded-2xl shadow-sm">
         <CardContent className="p-5">
           <header className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 avatar avatar-ring-cs">
+              <Avatar className="h-10 w-10">
                 <AvatarFallback>{post.initials}</AvatarFallback>
               </Avatar>
               <div>
                 <div className="text-sm font-semibold">{post.author}</div>
-                <div className="text-xs text-muted-foreground"><span className="year-tag mr-2">{post.year}</span>{post.subtitle}</div>
+                <div className="text-xs text-muted-foreground">{post.year} • {post.subtitle}</div>
               </div>
             </div>
-            <Button variant="connect" size="sm">Connect</Button>
+            <Button variant="outline" size="sm">Connect</Button>
           </header>
 
           <section className="mt-4 text-sm text-foreground">
-            <div className="post-content">
-              <p className="max-h-24 overflow-hidden">
-                {post.text} <button className="text-primary hover:underline">see more</button>
-              </p>
-            </div>
+            <p className="max-h-24 overflow-hidden">
+              {post.text} <button className="text-primary hover:underline">see more</button>
+            </p>
             {/* Media preview placeholder */}
             <div className="mt-4 h-40 w-full rounded-xl bg-muted" aria-hidden />
           </section>
 
           <div className="mt-4 grid grid-cols-3 divide-x rounded-lg border">
-            <button className="action-btn flex items-center justify-center gap-2 py-2 text-sm transition-transform duration-200 ease-out hover:scale-[1.02] comment-btn">
+            <button className="flex items-center justify-center gap-2 py-2 text-sm hover:bg-accent/70 transition-transform duration-200 ease-out hover:scale-[1.02]">
               <MessageCircle size={18} /> Comment
             </button>
-            <button className="action-btn flex items-center justify-center gap-2 py-2 text-sm transition-transform duration-200 ease-out hover:scale-[1.02] share-btn">
+            <button className="flex items-center justify-center gap-2 py-2 text-sm hover:bg-accent/70 transition-transform duration-200 ease-out hover:scale-[1.02]">
               <Share2 size={18} /> Share
             </button>
-            <button className="action-btn flex items-center justify-center gap-2 py-2 text-sm transition-transform duration-200 ease-out hover:scale-[1.02]">
+            <button className="flex items-center justify-center gap-2 py-2 text-sm hover:bg-accent/70 transition-transform duration-200 ease-out hover:scale-[1.02]">
               <MessageSquareMore size={18} /> Chat
             </button>
           </div>
 
           <footer className="mt-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6 avatar avatar-ring-online"><AvatarFallback>MI</AvatarFallback></Avatar>
+              <Avatar className="h-6 w-6"><AvatarFallback>MI</AvatarFallback></Avatar>
               <span>Mike: "I'm interested in..."</span>
               <button className="text-primary hover:underline ml-auto">Show all comments</button>
             </div>
