@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      club_members: {
+        Row: {
+          club_id: string | null
+          id: string
+          joined_at: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          club_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          club_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_members_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clubs: {
+        Row: {
+          banner_url: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          profile_pic_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          profile_pic_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          profile_pic_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clubs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           author_id: string | null
@@ -102,6 +182,237 @@ export type Database = {
           {
             foreignKeyName: "connections_requester_id_fkey"
             columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      direct_messages: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          edited_at: string | null
+          id: string
+          is_read: boolean | null
+          media_urls: string[] | null
+          receiver_id: string | null
+          sender_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          media_urls?: string[] | null
+          receiver_id?: string | null
+          sender_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          media_urls?: string[] | null
+          receiver_id?: string | null
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          event_type: string | null
+          id: string
+          image_url: string | null
+          name: string
+          organizer_id: string | null
+          organizer_type: string | null
+          start_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          organizer_id?: string | null
+          organizer_type?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          organizer_id?: string | null
+          organizer_type?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string | null
+          id: string
+          joined_at: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          profile_pic_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          profile_pic_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          profile_pic_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_visibility: {
+        Row: {
+          id: string
+          post_id: string | null
+          visible_to_club: string | null
+          visible_to_group: string | null
+          visible_to_user: string | null
+        }
+        Insert: {
+          id?: string
+          post_id?: string | null
+          visible_to_club?: string | null
+          visible_to_group?: string | null
+          visible_to_user?: string | null
+        }
+        Update: {
+          id?: string
+          post_id?: string | null
+          visible_to_club?: string | null
+          visible_to_group?: string | null
+          visible_to_user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_visibility_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_visibility_visible_to_club_fkey"
+            columns: ["visible_to_club"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_visibility_visible_to_group_fkey"
+            columns: ["visible_to_group"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_visibility_visible_to_user_fkey"
+            columns: ["visible_to_user"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
