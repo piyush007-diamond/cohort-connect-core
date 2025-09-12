@@ -366,6 +366,83 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          related_id: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          related_id?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          related_id?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_interactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          interaction_type: string | null
+          post_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          post_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          post_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_interactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_visibility: {
         Row: {
           id: string
@@ -507,6 +584,121 @@ export type Database = {
           year_of_study?: string | null
         }
         Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_by: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          name: string
+          status: string | null
+          updated_at: string | null
+          workflow_step: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          name: string
+          status?: string | null
+          updated_at?: string | null
+          workflow_step?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          name?: string
+          status?: string | null
+          updated_at?: string | null
+          workflow_step?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          group_id: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          workflow_steps: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          group_id?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          workflow_steps?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          group_id?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          workflow_steps?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspaces_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspaces_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
