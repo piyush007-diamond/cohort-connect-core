@@ -513,7 +513,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_feed: {
+        Args: { user_id?: string }
+        Returns: {
+          author_id: string
+          author_name: string
+          author_pic: string
+          content: string
+          created_at: string
+          media_urls: string[]
+          post_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
