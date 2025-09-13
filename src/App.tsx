@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Friends from "./pages/Friends";
 import Groups from "./pages/Groups";
 import Clubs from "./pages/Clubs";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -26,6 +27,11 @@ const App = () => (
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } />
             <Route path="/friends" element={
