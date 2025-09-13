@@ -58,8 +58,10 @@ export const useFriendRequests = () => {
         return { error: error.message };
       }
 
+      console.log('Friend request created:', data);
+
       // Create notification for the receiver
-      await supabase
+      const { error: notificationError } = await supabase
         .from('notifications')
         .insert({
           user_id: receiverId,
@@ -67,6 +69,12 @@ export const useFriendRequests = () => {
           content: 'You have a new friend request',
           related_id: data.id // Store connection_id in related_id
         });
+
+      if (notificationError) {
+        console.error('Error creating notification:', notificationError);
+      } else {
+        console.log('Notification created successfully');
+      }
 
       toast({
         title: 'Friend request sent!',

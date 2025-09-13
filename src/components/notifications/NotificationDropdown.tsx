@@ -7,11 +7,14 @@ import { Bell, Check, X, UserPlus } from 'lucide-react';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useFriendRequests } from '@/hooks/useFriendRequests';
 import { formatDistanceToNow } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 export const NotificationDropdown = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const { acceptFriendRequest, rejectFriendRequest, loading } = useFriendRequests();
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+
+  console.log('NotificationDropdown render:', { notifications, unreadCount });
 
   const handleAcceptFriendRequest = async (notification: Notification) => {
     if (!notification.related_id) return;
@@ -185,16 +188,37 @@ export const NotificationDropdown = () => {
       <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto p-0">
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="font-semibold">Notifications</h3>
-          {unreadCount > 0 && (
+          <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={markAllAsRead}
+              onClick={async () => {
+                // Manual test to check if notifications exist in database
+                const { user } = await supabase.auth.getUser();
+                if (user) {
+                  const { data, error } = await supabase
+                    .from('notifications')
+                    .select('*')
+                    .eq('user_id', user.user?.id);
+                  console.log('Manual notification check:', { data, error, userId: user.user?.id });
+                }
+                window.location.reload();
+              }}
               className="text-xs h-auto p-1"
             >
-              Mark all read
+              Debug
             </Button>
-          )}
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={markAllAsRead}
+                className="text-xs h-auto p-1"
+              >
+                Mark all read
+              </Button>
+            )}
+          </div>
         </div>
         
         <div className="max-h-80 overflow-y-auto">
@@ -202,13 +226,19 @@ export const NotificationDropdown = () => {
             <div className="p-6 text-center text-muted-foreground">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No notifications yet</p>
+              <p className="text-xs mt-2">Debug: {JSON.stringify({ count: notifications.length, unreadCount })}</p>
             </div>
           ) : (
-            notifications.map((notification) => (
-              <div key={notification.id} onClick={() => !notification.is_read && markAsRead(notification.id)}>
-                {renderNotificationContent(notification)}
+            <div>
+              <div className="p-2 text-xs text-muted-foreground border-b">
+                Debug: {notifications.length} notifications found
               </div>
-            ))
+              {notifications.map((notification) => (
+                <div key={notification.id} onClick={() => !notification.is_read && markAsRead(notification.id)}>
+                  {renderNotificationContent(notification)}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </DropdownMenuContent>

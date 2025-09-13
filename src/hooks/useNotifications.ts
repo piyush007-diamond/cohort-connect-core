@@ -25,7 +25,12 @@ export const useNotifications = () => {
   const { user } = useAuth();
 
   const fetchNotifications = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user found for notifications');
+      return;
+    }
+
+    console.log('Fetching notifications for user:', user.id);
 
     try {
       const { data, error } = await supabase
@@ -39,6 +44,8 @@ export const useNotifications = () => {
         console.error('Error fetching notifications:', error);
         return;
       }
+
+      console.log('Raw notifications from database:', data);
 
       // Fetch requester details for friend request notifications
       const enrichedNotifications = await Promise.all(
@@ -63,6 +70,10 @@ export const useNotifications = () => {
         })
       );
 
+      console.log('Fetched notifications:', enrichedNotifications);
+      console.log('Setting notifications state with:', enrichedNotifications.length, 'items');
+      console.log('Unread count will be:', enrichedNotifications.filter(n => !n.is_read).length);
+      
       setNotifications(enrichedNotifications);
       setUnreadCount(enrichedNotifications.filter(n => !n.is_read).length);
     } catch (error) {
@@ -119,6 +130,7 @@ export const useNotifications = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('Setting up notifications for user:', user.id);
       fetchNotifications();
 
       // Set up real-time subscription for new notifications
@@ -132,15 +144,20 @@ export const useNotifications = () => {
             table: 'notifications',
             filter: `user_id=eq.${user.id}`,
           },
-          () => {
+          (payload) => {
+            console.log('Real-time notification received:', payload);
             fetchNotifications(); // Refresh notifications when new one arrives
           }
         )
         .subscribe();
 
+      console.log('Real-time subscription set up for notifications');
+
       return () => {
         supabase.removeChannel(channel);
       };
+    } else {
+      console.log('No user available for notifications setup');
     }
   }, [user]);
 

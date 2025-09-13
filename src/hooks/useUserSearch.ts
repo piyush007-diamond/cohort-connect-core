@@ -38,6 +38,7 @@ export const useUserSearch = (query: string) => {
           console.error('Error searching users:', error);
           setUsers([]);
         } else {
+          console.log('Search results:', data);
           setUsers(data || []);
         }
       } catch (error) {
