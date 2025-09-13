@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { NavBar } from "@/components/layout/NavBar";
 import { FriendsLeftPanel } from "@/components/friends/FriendsLeftPanel";
 import { FriendsRightPanel } from "@/components/friends/FriendsRightPanel";
+import { useFriends, Friend as DatabaseFriend } from "@/hooks/useFriends";
 
 export interface Friend {
   id: string;
@@ -18,6 +19,30 @@ export interface Friend {
   avatar?: string;
 }
 
+// Transform database friend to UI friend format
+const transformFriend = (dbFriend: DatabaseFriend): Friend => {
+  const initials = dbFriend.full_name
+    .split(' ')
+    .map(name => name.charAt(0))
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  return {
+    id: dbFriend.id,
+    name: dbFriend.full_name,
+    initials,
+    year: dbFriend.year_of_study || 'Unknown',
+    branch: dbFriend.branch || 'Unknown',
+    skills: dbFriend.skills || [],
+    lastMessage: 'Start a conversation',
+    lastMessageTime: '',
+    isOnline: dbFriend.is_online || false,
+    unreadCount: 0,
+    avatar: dbFriend.profile_pic_url || undefined
+  };
+};
+
 export interface FriendSuggestion {
   id: string;
   name: string;
@@ -28,46 +53,6 @@ export interface FriendSuggestion {
   reason: string;
   avatar?: string;
 }
-
-// Mock data
-const mockFriends: Friend[] = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    initials: "SJ",
-    year: "2nd Year",
-    branch: "Computer Science",
-    skills: ["React", "Python", "UI/UX"],
-    lastMessage: "Hey! Are you free for the study session?",
-    lastMessageTime: "10:45 PM",
-    isOnline: true,
-    unreadCount: 2,
-  },
-  {
-    id: "2", 
-    name: "Alex Chen",
-    initials: "AC",
-    year: "3rd Year",
-    branch: "Data Science", 
-    skills: ["Machine Learning", "Python", "Statistics"],
-    lastMessage: "Thanks for the notes!",
-    lastMessageTime: "Yesterday",
-    isOnline: false,
-    unreadCount: 0,
-  },
-  {
-    id: "3",
-    name: "Maria Garcia",
-    initials: "MG", 
-    year: "1st Year",
-    branch: "Design",
-    skills: ["Figma", "Adobe Creative Suite", "Prototyping"],
-    lastMessage: "The mockups look great",
-    lastMessageTime: "2 days ago",
-    isOnline: true,
-    unreadCount: 1,
-  },
-];
 
 const mockSuggestions: FriendSuggestion[] = [
   {
@@ -102,8 +87,11 @@ const mockSuggestions: FriendSuggestion[] = [
 const Friends = () => {
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [showExplore, setShowExplore] = useState(false);
-  const [friends] = useState<Friend[]>(mockFriends);
   const [suggestions] = useState<FriendSuggestion[]>(mockSuggestions);
+  const { friends: dbFriends, loading } = useFriends();
+  
+  // Transform database friends to UI format
+  const friends = dbFriends.map(transformFriend);
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,12 +104,18 @@ const Friends = () => {
       <main className="flex h-[calc(100vh-8rem)]">
         {/* Left Panel - 1/3 width */}
         <div className="w-1/3 border-r border-border bg-background">
-          <FriendsLeftPanel
-            friends={friends}
-            selectedFriend={selectedFriend}
-            onSelectFriend={setSelectedFriend}
-            onExploreClick={() => setShowExplore(true)}
-          />
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-sm text-muted-foreground">Loading friends...</div>
+            </div>
+          ) : (
+            <FriendsLeftPanel
+              friends={friends}
+              selectedFriend={selectedFriend}
+              onSelectFriend={setSelectedFriend}
+              onExploreClick={() => setShowExplore(true)}
+            />
+          )}
         </div>
         
         {/* Right Panel - 2/3 width */}
