@@ -61,7 +61,7 @@ export function FriendsLeftPanel({
               selectedFriend?.id === friend.id
                 ? "bg-primary/10 border-primary"
                 : "bg-card border-border hover:bg-muted hover:border-primary/30"
-            } hover:transform hover:scale-[1.02] hover:shadow-md`}
+            } hover:transform hover:scale-[0.98] hover:shadow-md`}
           >
             <div className="flex items-center space-x-3">
               {/* Profile Photo with Online Status */}

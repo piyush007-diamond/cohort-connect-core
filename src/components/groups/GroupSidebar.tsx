@@ -78,12 +78,15 @@ export function GroupSidebar({ selectedGroup, onGroupSelect, onCreateGroup }: Gr
       </div>
 
       {/* Groups List */}
-      <div className="groups-container">
+      <div className="groups-container pt-2">
         {groups.map((group) => (
           <div
             key={group.id}
             onClick={() => onGroupSelect(group.id)}
-            className={`group-item p-3 mb-2 border rounded-xl cursor-pointer transition-all duration-200 hover:border-blue-500 hover:shadow-md hover:-translate-y-0.5 ${
+
+// make the change in the scale instead of translate
+
+            className={`group-item p-3 mb-2 border rounded-xl cursor-pointer transition-all duration-200 hover:border-blue-500 hover:shadow-md hover:scale-[0.98] ${   
               selectedGroup === group.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
             }`}
           >

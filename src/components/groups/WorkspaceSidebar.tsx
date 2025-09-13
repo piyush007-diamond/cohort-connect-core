@@ -50,7 +50,7 @@ export function WorkspaceSidebar({ selectedWorkspace, onWorkspaceSelect, onCreat
           <div
             key={workspace.id}
             onClick={() => onWorkspaceSelect(workspace.id)}
-            className={`workspace-item p-3 mb-2 border rounded-xl cursor-pointer transition-all duration-200 hover:border-green-500 hover:shadow-md hover:-translate-y-0.5 ${
+            className={`workspace-item p-3 mb-2 border rounded-xl cursor-pointer transition-all duration-200 hover:border-green-500 hover:shadow-md hover:scale-[0.98] ${
               selectedWorkspace === workspace.id ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white'
             }`}
           >
