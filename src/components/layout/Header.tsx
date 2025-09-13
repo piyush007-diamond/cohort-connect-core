@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -7,27 +7,19 @@ import { Plus, Search, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useUserSearch, SearchUser } from "@/hooks/useUserSearch";
+import { UserProfileModal } from "@/components/modals/UserProfileModal";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
-interface SearchResult {
-  id: string;
-  name: string;
-  year: string;
-  major: string;
-  initials: string;
-}
-
-const mockResults: SearchResult[] = [
-  { id: "1", name: "Sarah Johnson", year: "2nd Year", major: "Computer Science", initials: "SJ" },
-  { id: "2", name: "Alex Chen", year: "3rd Year", major: "Data Science", initials: "AC" },
-  { id: "3", name: "Jane Smith", year: "1st Year", major: "Design", initials: "JS" },
-  { id: "4", name: "Mike Brown", year: "4th Year", major: "Mechanical Eng.", initials: "MB" },
-];
 
 export function Header({ onOpenCreate }: { onOpenCreate: () => void }) {
   const [q, setQ] = useState("");
   const [focused, setFocused] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { users, loading } = useUserSearch(q);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -45,11 +37,12 @@ export function Header({ onOpenCreate }: { onOpenCreate: () => void }) {
     }
   };
 
-  const results = useMemo(() => {
-    if (!q.trim()) return [] as SearchResult[];
-    const t = q.toLowerCase();
-    return mockResults.filter(r => r.name.toLowerCase().includes(t) || r.major.toLowerCase().includes(t));
-  }, [q]);
+  const handleUserClick = (clickedUser: SearchUser) => {
+    setSelectedUser(clickedUser);
+    setShowUserModal(true);
+    setQ("");
+    setFocused(false);
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
@@ -71,23 +64,48 @@ export function Header({ onOpenCreate }: { onOpenCreate: () => void }) {
             className="pl-9 rounded-xl"
             aria-label="Search students, groups, clubs"
           />
-          {(focused || q) && results.length > 0 && (
+          {(focused || q) && (users.length > 0 || loading) && (
             <div className="absolute top-11 w-full bg-popover text-popover-foreground rounded-xl shadow-lg border border-border z-50">
               <ul className="max-h-80 overflow-auto py-2">
-                {results.map((r) => (
-                  <li key={r.id}
-                      className="px-3 py-2 hover:bg-accent/70 cursor-pointer transition-colors">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>{r.initials}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium leading-tight">{r.name}</div>
-                        <div className="text-xs text-muted-foreground">{r.year} • {r.major}</div>
-                      </div>
-                    </div>
+                {loading ? (
+                  <li className="px-3 py-2 text-center text-sm text-muted-foreground">
+                    Searching...
                   </li>
-                ))}
+                ) : users.length > 0 ? (
+                  users.map((user) => {
+                    const initials = user.full_name
+                      .split(' ')
+                      .map(name => name.charAt(0))
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2);
+                    
+                    return (
+                      <li key={user.id}
+                          onClick={() => handleUserClick(user)}
+                          className="px-3 py-2 hover:bg-accent/70 cursor-pointer transition-colors">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>{initials}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium leading-tight">{user.full_name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {user.year_of_study && user.branch 
+                                ? `${user.year_of_study} • ${user.branch}`
+                                : user.year_of_study || user.branch || '@' + user.username
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })
+                ) : q.trim().length >= 2 ? (
+                  <li className="px-3 py-2 text-center text-sm text-muted-foreground">
+                    No users found
+                  </li>
+                ) : null}
               </ul>
             </div>
           )}
@@ -97,6 +115,8 @@ export function Header({ onOpenCreate }: { onOpenCreate: () => void }) {
           <Button size="icon" onClick={onOpenCreate} aria-label="Create post">
             <Plus />
           </Button>
+          
+          <NotificationDropdown />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -128,6 +148,12 @@ export function Header({ onOpenCreate }: { onOpenCreate: () => void }) {
           </DropdownMenu>
         </div>
       </div>
+      
+      <UserProfileModal 
+        user={selectedUser}
+        open={showUserModal}
+        onOpenChange={setShowUserModal}
+      />
     </header>
   );
 }

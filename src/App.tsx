@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Friends from "./pages/Friends";
+import Groups from "./pages/Groups";
 import Clubs from "./pages/Clubs";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -36,6 +37,11 @@ const App = () => (
             <Route path="/friends" element={
               <ProtectedRoute>
                 <Friends />
+              </ProtectedRoute>
+            } />
+            <Route path="/groups" element={
+              <ProtectedRoute>
+                <Groups />
               </ProtectedRoute>
             } />
             <Route path="/clubs" element={
