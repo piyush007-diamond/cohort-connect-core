@@ -21,67 +21,82 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type Friend } from "@/pages/Friends";
-
-interface Message {
-  id: string;
-  text: string;
-  timestamp: string;
-  isSent: boolean;
-}
+import { useChat } from "@/hooks/useChat";
+import { useAuth } from "@/hooks/useAuth";
+import { formatDistanceToNow } from "date-fns";
 
 interface ChatInterfaceProps {
   friend: Friend;
   onProfileClick: () => void;
 }
 
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    text: "Hey! How's the project coming along?",
-    timestamp: "10:30 AM",
-    isSent: false,
-  },
-  {
-    id: "2", 
-    text: "Pretty good! Just finished the frontend part. Working on the backend now.",
-    timestamp: "10:32 AM",
-    isSent: true,
-  },
-  {
-    id: "3",
-    text: "That's awesome! Need any help with the APIs?",
-    timestamp: "10:33 AM", 
-    isSent: false,
-  },
-  {
-    id: "4",
-    text: "Actually yes! Could you help me with the authentication part?",
-    timestamp: "10:35 AM",
-    isSent: true,
-  },
-];
-
 export function ChatInterface({ friend, onProfileClick }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const { user } = useAuth();
+  const { messages: chatMessages, loading, sendMessage, uploadFile } = useChat(friend.id);
   const [newMessage, setNewMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    const message: Message = {
-      id: Date.now().toString(),
-      text: newMessage,
-      timestamp: new Date().toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      }),
-      isSent: true,
-    };
-
-    setMessages([...messages, message]);
+    await sendMessage(newMessage);
     setNewMessage("");
+  };
+
+  const handleFileUpload = async (files: FileList | null, type: 'document' | 'media') => {
+    if (!files || files.length === 0) return;
+
+    console.log('Starting file upload for', files.length, 'files');
+    setUploading(true);
+    
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        console.log('Processing file:', file.name, 'Type:', file.type);
+        const url = await uploadFile(file);
+        console.log('Upload result for', file.name, ':', url);
+        return url;
+      });
+      
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const validUrls = uploadedUrls.filter(url => url !== null) as string[];
+
+      console.log('Valid URLs:', validUrls);
+
+      if (validUrls.length > 0) {
+        const fileNames = Array.from(files).map(file => file.name);
+        const message = type === 'document' 
+          ? `📎 ${fileNames.join(', ')}` 
+          : `📷 ${fileNames.length} file(s)`;
+        
+        console.log('Sending message with attachments:', message, validUrls);
+        const result = await sendMessage(message, validUrls);
+        console.log('Message sent result:', result);
+      } else {
+        console.error('No valid URLs after upload');
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerFileInput = (accept: string, type: 'document' | 'media') => {
+    console.log('Triggering file input with accept:', accept, 'type:', type);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = accept;
+    input.multiple = true;
+    input.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+      console.log('File input changed, files:', target.files);
+      if (target.files && target.files.length > 0) {
+        console.log('Selected files:', Array.from(target.files).map(f => f.name));
+        handleFileUpload(target.files, type);
+      }
+    };
+    input.click();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -124,27 +139,82 @@ export function ChatInterface({ friend, onProfileClick }: ChatInterfaceProps) {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.isSent ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                message.isSent
-                  ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-muted text-foreground rounded-bl-md"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-              <p className={`text-xs mt-1 ${
-                message.isSent ? "text-primary-foreground/70" : "text-muted-foreground"
-              }`}>
-                {message.timestamp}
-              </p>
-            </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-muted-foreground">Loading messages...</p>
           </div>
-        ))}
+        ) : chatMessages.length === 0 ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-muted-foreground">No messages yet. Start a conversation!</p>
+          </div>
+        ) : (
+          chatMessages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.sender_id === user?.id ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                  message.sender_id === user?.id
+                    ? "bg-primary text-primary-foreground rounded-br-md"
+                    : "bg-muted text-foreground rounded-bl-md"
+                }`}
+              >
+                {message.content && <p className="text-sm">{message.content}</p>}
+                
+                {/* Render media attachments */}
+                {message.media_urls && message.media_urls.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    {message.media_urls.map((url, index) => {
+                      const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                      const isVideo = url.match(/\.(mp4|webm|ogg)$/i);
+                      
+                      if (isImage) {
+                        return (
+                          <img
+                            key={index}
+                            src={url}
+                            alt="Shared image"
+                            className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-80"
+                            onClick={() => window.open(url, '_blank')}
+                          />
+                        );
+                      } else if (isVideo) {
+                        return (
+                          <video
+                            key={index}
+                            src={url}
+                            controls
+                            className="max-w-full h-auto rounded-lg"
+                          />
+                        );
+                      } else {
+                        return (
+                          <a
+                            key={index}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm underline hover:no-underline"
+                          >
+                            <FileText className="h-4 w-4" />
+                            View attachment
+                          </a>
+                        );
+                      }
+                    })}
+                  </div>
+                )}
+                
+                <p className={`text-xs mt-1 ${
+                  message.sender_id === user?.id ? "text-primary-foreground/70" : "text-muted-foreground"
+                }`}>
+                  {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Chat Input Section */}
@@ -158,27 +228,48 @@ export function ChatInterface({ friend, onProfileClick }: ChatInterfaceProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start" className="w-48">
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem 
+                className="gap-2 cursor-pointer"
+                onClick={() => triggerFileInput('.pdf,.doc,.docx,.txt,.xlsx,.pptx', 'document')}
+                disabled={uploading}
+              >
                 <FileText className="h-4 w-4" />
                 Document
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem 
+                className="gap-2 cursor-pointer"
+                onClick={() => triggerFileInput('image/*,video/*', 'media')}
+                disabled={uploading}
+              >
                 <ImageIcon className="h-4 w-4" />
                 Photo & Video
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem 
+                className="gap-2 cursor-pointer"
+                onClick={() => triggerFileInput('image/*', 'media')}
+                disabled={uploading}
+              >
                 <Camera className="h-4 w-4" />
                 Camera
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem 
+                className="gap-2 cursor-pointer opacity-50"
+                disabled
+              >
                 <Volume2 className="h-4 w-4" />
                 Audio Recording
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem 
+                className="gap-2 cursor-pointer opacity-50"
+                disabled
+              >
                 <Contact className="h-4 w-4" />
                 Contact
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem 
+                className="gap-2 cursor-pointer opacity-50"
+                disabled
+              >
                 <BarChart3 className="h-4 w-4" />
                 Poll
               </DropdownMenuItem>
@@ -193,13 +284,14 @@ export function ChatInterface({ friend, onProfileClick }: ChatInterfaceProps) {
           {/* Message Input */}
           <div className="flex-1 relative">
             <Input
-              placeholder="Type a message..."
+              placeholder={uploading ? "Uploading..." : "Type a message..."}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               className="pr-12"
+              disabled={uploading}
             />
-            {newMessage.trim() && (
+            {newMessage.trim() && !uploading && (
               <Button
                 size="icon"
                 onClick={handleSendMessage}
@@ -207,6 +299,11 @@ export function ChatInterface({ friend, onProfileClick }: ChatInterfaceProps) {
               >
                 <Send className="h-4 w-4" />
               </Button>
+            )}
+            {uploading && (
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+              </div>
             )}
           </div>
 

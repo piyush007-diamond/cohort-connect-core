@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { NavBar } from "@/components/layout/NavBar";
 import { FriendsLeftPanel } from "@/components/friends/FriendsLeftPanel";
@@ -89,9 +90,22 @@ const Friends = () => {
   const [showExplore, setShowExplore] = useState(false);
   const [suggestions] = useState<FriendSuggestion[]>(mockSuggestions);
   const { friends: dbFriends, loading } = useFriends();
+  const [searchParams] = useSearchParams();
   
   // Transform database friends to UI format
   const friends = dbFriends.map(transformFriend);
+
+  // Handle URL parameter for direct chat navigation
+  useEffect(() => {
+    const chatFriendId = searchParams.get('chat');
+    if (chatFriendId && friends.length > 0) {
+      const friendToSelect = friends.find(friend => friend.id === chatFriendId);
+      if (friendToSelect) {
+        setSelectedFriend(friendToSelect);
+        setShowExplore(false);
+      }
+    }
+  }, [searchParams, friends]);
 
   return (
     <div className="min-h-screen bg-background">

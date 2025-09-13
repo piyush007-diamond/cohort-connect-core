@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { NavBar } from "@/components/layout/NavBar";
 import { SidebarLeft } from "@/components/layout/SidebarLeft";
@@ -7,31 +7,43 @@ import { PostCard, type Post } from "@/components/feed/PostCard";
 import { PostSkeleton } from "@/components/feed/PostSkeleton";
 import { CreatePostModal } from "@/components/modals/CreatePostModal";
 import { SignatureMoment } from "@/components/SignatureMoment";
+import { usePosts } from "@/hooks/usePosts";
+import { useAuth } from "@/hooks/useAuth";
 
-const mockPosts: Post[] = [
-  {
-    id: "1",
-    author: "Sarah Johnson",
-    initials: "SJ",
-    year: "2nd Year",
-    subtitle: "Computer Science, React, Python",
-    text: "Looking for teammates for the upcoming hackathon. We need someone good with backend development and APIs...",
-  },
-  {
-    id: "2",
-    author: "Alex Chen",
-    initials: "AC",
-    year: "3rd Year",
-    subtitle: "Data Science, TypeScript",
-    text: "Anyone up for a study group this weekend focusing on algorithms and system design?",
-  },
-];
+// Transform database post to UI post format
+const transformPost = (dbPost: any): Post => {
+  const initials = dbPost.author?.full_name
+    ?.split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase() || 'U';
+
+  const skills = dbPost.author?.skills || [];
+  const subtitle = [
+    dbPost.author?.branch,
+    dbPost.author?.year_of_study,
+    ...skills.slice(0, 2)
+  ].filter(Boolean).join(', ');
+
+  return {
+    id: dbPost.id,
+    author: dbPost.author?.full_name || 'Unknown User',
+    initials,
+    year: dbPost.author?.year_of_study || '',
+    subtitle,
+    text: dbPost.content,
+  };
+};
 
 const Index = () => {
   const [openCreate, setOpenCreate] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { posts: dbPosts, loading } = usePosts();
+  const { user } = useAuth();
 
-  const posts = useMemo(() => mockPosts, []);
+  const posts = dbPosts.map(transformPost);
+  
+  console.log('Index page - dbPosts count:', dbPosts.length);
+  console.log('Index page - transformed posts:', posts);
 
   return (
     <div>
@@ -51,6 +63,10 @@ const Index = () => {
             <div className="space-y-4">
               <PostSkeleton />
               <PostSkeleton />
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
             </div>
           ) : (
             <div>
@@ -78,7 +94,11 @@ const Index = () => {
         }}
       />
 
-      <CreatePostModal open={openCreate} onOpenChange={setOpenCreate} />
+      <CreatePostModal 
+        open={openCreate} 
+        onOpenChange={setOpenCreate}
+        currentUser={user}
+      />
     </div>
   );
 };

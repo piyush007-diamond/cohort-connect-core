@@ -1,14 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useFriends } from "@/hooks/useFriends";
+import { useNavigate } from "react-router-dom";
 
-const chats = Array.from({ length: 8 }).map((_, i) => ({
-  id: i + 1,
-  name: ["John Doe", "Jane Smith", "Mike Brown", "Alex Chen", "Sara Lee"][i % 5],
-  time: ["2d", "1h", "3h", "5m"][i % 4],
-  preview: ["Hey, about...", "Thanks for...", "Let's meet...", "See you at..."][i % 4],
-  unread: i % 3 === 0 ? (i % 2 === 0 ? 3 : 1) : 0,
-  initials: ["JD", "JS", "MB", "AC", "SL"][i % 5],
-}));
 
 const groups = [
   { name: "Study Group CS", unread: 5 },
@@ -23,31 +17,65 @@ const clubs = [
 ];
 
 export function SidebarLeft() {
+  const { friends, loading } = useFriends();
+  const navigate = useNavigate();
+
+  const handleFriendClick = (friendId: string) => {
+    navigate(`/friends?chat=${friendId}`);
+  };
+
   return (
     <aside className="hidden lg:block w-[280px] flex-shrink-0">
       <section aria-labelledby="friends-heading" className="mb-6">
         <h2 id="friends-heading" className="text-sm font-semibold text-foreground mb-3">Friends</h2>
         <div className="rounded-lg border border-border bg-card">
           <ul className="max-h-[540px] overflow-auto divide-y">
-            {chats.map((c) => (
-              <li key={c.id} className="px-3 py-3 hover:bg-accent/70 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback>{c.initials}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 overflow-hidden">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium truncate">{c.name}</span>
-                      <span className="text-xs text-muted-foreground">{c.time}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">{c.preview}</div>
-                  </div>
-                  {c.unread > 0 && (
-                    <Badge className="ml-1" variant="secondary">{c.unread}</Badge>
-                  )}
-                </div>
+            {loading ? (
+              <li className="px-3 py-3">
+                <div className="text-xs text-muted-foreground">Loading friends...</div>
               </li>
-            ))}
+            ) : friends.length === 0 ? (
+              <li className="px-3 py-3">
+                <div className="text-xs text-muted-foreground">No friends yet</div>
+              </li>
+            ) : (
+              friends.map((friend) => {
+                const initials = friend.full_name
+                  .split(' ')
+                  .map(n => n[0])
+                  .join('')
+                  .toUpperCase();
+                
+                return (
+                  <li 
+                    key={friend.id} 
+                    className="px-3 py-3 hover:bg-accent/70 transition-colors cursor-pointer"
+                    onClick={() => handleFriendClick(friend.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={friend.profile_pic_url || undefined} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 overflow-hidden">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium truncate">{friend.full_name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {friend.is_online ? 'Active' : 'Offline'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {friend.branch} • {friend.year_of_study}
+                        </div>
+                      </div>
+                      {friend.is_online && (
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })
+            )}
           </ul>
         </div>
       </section>
