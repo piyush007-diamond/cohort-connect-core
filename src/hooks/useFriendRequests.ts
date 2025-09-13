@@ -64,9 +64,8 @@ export const useFriendRequests = () => {
         .insert({
           user_id: receiverId,
           type: 'friend_request',
-          title: 'New Friend Request',
-          message: 'You have a new friend request',
-          data: { connection_id: data.id, requester_id: user.id }
+          content: 'You have a new friend request',
+          related_id: data.id // Store connection_id in related_id
         });
 
       toast({
@@ -116,9 +115,8 @@ export const useFriendRequests = () => {
         .insert({
           user_id: data.requester_id,
           type: 'friend_request_accepted',
-          title: 'Friend Request Accepted',
-          message: 'Your friend request has been accepted',
-          data: { connection_id: connectionId }
+          content: 'Your friend request has been accepted',
+          related_id: connectionId
         });
 
       toast({

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useUserSearch, SearchUser } from "@/hooks/useUserSearch";
 import { UserProfileModal } from "@/components/modals/UserProfileModal";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 
 export function Header({ onOpenCreate }: { onOpenCreate: () => void }) {
@@ -114,6 +115,8 @@ export function Header({ onOpenCreate }: { onOpenCreate: () => void }) {
           <Button size="icon" onClick={onOpenCreate} aria-label="Create post">
             <Plus />
           </Button>
+          
+          <NotificationDropdown />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
