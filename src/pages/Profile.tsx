@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Camera, Plus, X, Loader2, Edit2, Check, ArrowLeft } from 'lucide-react';
-import { useProfile, Profile } from '@/hooks/useProfile';
+import { useProfile, type Profile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
